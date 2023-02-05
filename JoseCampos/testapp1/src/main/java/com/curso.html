@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .tablas {
+      font-family: Arial, Helvetica, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    .tablas td, #cursos th {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    
+    .tablas tr:nth-child(even){background-color: #f2f2f2;}
+    
+    .tablas tr:hover {background-color: #ddd;}
+    
+    .tablas th {
+      padding-top: 12px;
+      padding-bottom: 12px;
+      text-align: left;
+      background-color: #04AA6D;
+      color: white;
+    }
+    </style>
+</head>
+<body margin="75%">
+  <h2 style="margin:5px">Courses</h2>
+  <div align="left">
+    <input type="text" id="name" placeholder="name...">
+    <input type="text" id="duration" placeholder="duration...">
+    <input type="text" id="description" placeholder="description...">
+    <button id="myBtn" onclick="save()">save</button>
+    <input type="text" id="id" placeholder="Borrar ID">
+    <button id="myBtn" onclick="borrar()">delete</button>
+    </div>
+  </div>
+  
+
+  <br>
+  <table class="tablas" id="cursos" id="todos">
+    <tr>
+      <th>ID</th>
+      <th>Course</th>
+      <th>Duration</th>
+      <th>Description</th>
+    </tr>
+  </table>
+  <br>
+
+ 
+  </table>
+</body>
+  <script>
+    window.onload = function () {
+      getCourses();
+    }
+
+    function addCourseHTML(id, name, duration, description, tabla){
+      let newLi = document.createElement("tr");
+      let newP = document.createElement("td")
+      newP.innerText = id;
+      newLi.appendChild(newP)
+      newP = document.createElement("td")
+      newP.innerText = name;
+      newLi.appendChild(newP)
+      newP = document.createElement("td")
+      newP.innerText = duration;
+      newLi.appendChild(newP)
+      newP = document.createElement("td")
+      newP.innerText = description;
+      newLi.appendChild(newP)
+      document.getElementById(tabla).appendChild(newLi);
+    }
+    async function getCourses() {
+      const uri = "http://localhost:8080/cursos/thecorner";
+      const promise = fetch(uri, {
+        method: "get",
+        mode: "cors", // no-cors, *cors, same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "omit", // include, *same-origin, omit
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    
+      json = promise.then(response => response.json());
+      json.then(data => {
+        console.log(data)
+        for (let i = 0; i < data.length; i++) {
+          addCourseHTML(data[i].id, data[i].name, data[i].duration, data[i].description, "cursos");
+        }});
+
+    }
+    async function save() {
+      in_name = document.getElementById("name").value;
+      in_duration = document.getElementById("duration").value;
+      in_description = document.getElementById("description").value;
+
+
+      course = {name: in_name, duration: in_duration, description: in_description}
+
+      const uri = "http://localhost:8080/cursos/thecorner";
+      const res = await fetch(uri, {
+          method: "post",
+          mode: "cors", // no-cors, *cors, same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "omit", // include, *same-origin, omit
+          headers: {
+          "Content-Type": "application/json",
+          },
+          
+          body: JSON.stringify(course),
+        }
+      );
+
+      if (res.status === 200) {
+        res.text().then(id => {
+          console.log(id)
+        });
+      } else {
+        alert("Error: Note not stored");
+      }
+      location.reload();
+    }
+
+    async function buscar() {
+      in_id = document.getElementById("id-search").value;
+
+      const uri = `http://localhost:8080/cursos/thecorner/${in_id}`;
+      const promise = fetch(uri, {
+        method: "get",
+        mode: "cors", // no-cors, *cors, same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "omit", // include, *same-origin, omit
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      json = promise.then(response => response.json());
+      json.then(data => {
+        addCourseHTML(data.id, data.name, data.duration, data.description, "buscados");
+      })
+    }
+    async function borrar() {
+      id_search = document.getElementById("id").value;
+      
+      const uri = `http://localhost:8080/cursos/thecorner/${id_search}`; //http://localhost:5000/api/notes/10
+      const res = await fetch(uri, {
+        method: "delete",
+        mode: "cors", // no-cors, *cors, same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "omit", // include, *same-origin, omit
+        headers: {
+          "Content-Type": "application/json",
+          //Authorization: "Bearer" + localStorage.token,
+        },
+      });
+
+      console.log(res);
+      if (res.status === 200) {
+        res.text().then(txt => {
+          alert(txt);
+          return true;
+        });
+      } else {
+        return false;
+      }
+      location.reload();
+    }
+  </script>
+
+</html>
